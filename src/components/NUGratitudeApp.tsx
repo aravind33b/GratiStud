@@ -34,7 +34,7 @@ export default function NUGratitudeApp() {
 
   const fetchPosts = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/posts')
+      const response = await fetch('https://gratitudor-backend.onrender.com/api/posts')
       const data = await response.json()
       setPosts(data)
     } catch (error) {
@@ -67,7 +67,7 @@ export default function NUGratitudeApp() {
       }
 
       try {
-        const response = await fetch('http://localhost:3001/api/posts', {
+        const response = await fetch('https://gratitudor-backend.onrender.com/api/posts', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
