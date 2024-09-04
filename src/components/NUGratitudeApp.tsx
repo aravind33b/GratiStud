@@ -31,12 +31,20 @@ export default function NUGratitudeApp() {
   const [posts, setPosts] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
-  const fetchPosts = useCallback(async () => {
+  const fetchPosts = useCallback(async (pageNum = 1) => {
     try {
-      const response = await fetch('https://gratitudor-backend.onrender.com/api/posts')
+      const response = await fetch(`https://gratitudor-backend.onrender.com/api/posts?page=${pageNum}&limit=10`)
       const data = await response.json()
-      setPosts(data)
+      if (pageNum === 1) {
+        setPosts(data)
+      } else {
+        setPosts(prevPosts => [...prevPosts, ...data])
+      }
+      setHasMore(data.length === 10)
     } catch (error) {
       console.error('Error fetching posts:', error)
     }
@@ -44,9 +52,14 @@ export default function NUGratitudeApp() {
 
   useEffect(() => {
     fetchPosts()
-    const intervalId = setInterval(fetchPosts, 30000)
-    return () => clearInterval(intervalId)
   }, [fetchPosts])
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true)
+    await fetchPosts(page + 1)
+    setPage(prevPage => prevPage + 1)
+    setIsLoadingMore(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +73,7 @@ export default function NUGratitudeApp() {
         .join(' ')
 
       const newPost = {
-        author: author.trim(),
+        author: author.trim() || "Anonymous",
         message,
         hashtags: formattedHashtags,
         college: college || undefined,
@@ -82,7 +95,7 @@ export default function NUGratitudeApp() {
           setCollege('')
           setHashtags('')
           setShowSuccessMessage(true)
-          setTimeout(() => setShowSuccessMessage(false), 3000) // Hide message after 3 seconds
+          setTimeout(() => setShowSuccessMessage(false), 3000)
         } else {
           console.error('Failed to create post')
         }
@@ -95,11 +108,11 @@ export default function NUGratitudeApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-100 to-black p-8">
-      <Card className="max-w-4xl mx-auto bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-red-50 via-pink-50 to-white p-4 sm:p-8 flex flex-col">
+      <Card className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm flex-grow shadow-lg mb-8">
         <CardHeader>
-          <CardTitle className="text-4xl font-bold text-center text-red-600">husky gratitude board 🐶</CardTitle>
-          <p className="text-center text-black">Share what you're thankful for at Northeastern University!</p>
+          <CardTitle className="text-4xl font-bold text-center text-red-600">University Gratitude Board 🎓</CardTitle>
+          <p className="text-center text-black">Share what you're thankful for at your university!</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4 mb-8">
@@ -111,7 +124,6 @@ export default function NUGratitudeApp() {
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="share your name and inspire others - break the chain!"
                 className="text-black"
-                required
               />
               <p className="text-xs text-gray-600 mt-1">Sharing your name helps build a stronger, more connected Husky community!</p>
             </div>
@@ -153,7 +165,7 @@ export default function NUGratitudeApp() {
             </div>
             <Button 
               type="submit" 
-              className="bg-red-600 hover:bg-red-700 text-white w-full"
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white w-full transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg rounded-full py-2 font-semibold"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Sharing...' : 'Share Gratitude'}
@@ -201,8 +213,43 @@ export default function NUGratitudeApp() {
               ))}
             </AnimatePresence>
           </div>
+          
+          {hasMore && (
+            <div className="mt-8 text-center">
+              <Button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg rounded-full py-2 px-6 font-semibold"
+              >
+                {isLoadingMore ? 'Loading...' : 'Load More'}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
+      <footer className="w-full max-w-4xl mx-auto text-center text-gray-600 text-sm sm:text-base bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <h3 className="font-semibold mb-2">Created by</h3>
+            <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-2">
+              <a href="https://x.com/kashyab_19" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">@kashyab_19</a>
+              <span className="hidden sm:inline">&</span>
+              <a href="https://x.com/aravindguru33" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">@aravindguru33</a>
+            </div>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Powered by</h3>
+            <a href="https://x.com/cursor_ai" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">@cursor_ai</a>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Inspired by</h3>
+            <a href='https://x.com/ankitkr0' target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">@ankitkr0</a>
+          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p>&copy; 2024 Gratigram. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   )
 }
