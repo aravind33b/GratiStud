@@ -122,7 +122,17 @@ export default function NUGratitudeApp() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {posts.map((post, index) => (
-              <div key={post.id} className={`${colors[index % colors.length]} p-4 rounded-lg shadow-md transform rotate-${Math.floor(Math.random() * 3) - 1} hover:rotate-0 transition-transform duration-200`}>
+              <div 
+                key={post.id} 
+                className={`
+                  ${colors[index % colors.length]} 
+                  p-4 rounded-lg shadow-md 
+                  transform rotate-${Math.floor(Math.random() * 3) - 1} 
+                  transition-all duration-300 ease-in-out
+                  hover:rotate-0 hover:scale-105 hover:shadow-lg
+                  hover:-translate-y-1 cursor-pointer
+                `}
+              >
                 <h3 className="font-bold mb-2 text-black">{post.author}</h3>
                 <p className="text-sm mb-2 text-black">{post.message}</p>
                 {post.hashtags && <p className="text-xs text-gray-600">{post.hashtags}</p>}
