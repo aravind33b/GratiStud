@@ -1,20 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const mockPosts = [
-  { id: 1, author: "HuskyFan22", message: "Grateful for my amazing co-op experience at a tech startup!", hashtag: "#NUexperience" },
-  { id: 2, author: "NEUGlobetrotter", message: "Just finished my study abroad in London. So thankful for the global opportunities at Northeastern!", hashtag: "#NUabroad" },
-  { id: 3, author: "LibraryLover", message: "Snell Library's 24/7 hours are a lifesaver during finals week. Thanks, NU!", hashtag: "#SnellSavesLives" },
-  { id: 4, author: "HuskyHockey", message: "Cheering for our team at Matthews Arena always brightens my day. Go Huskies!", hashtag: "#HowlinHuskies" },
-  { id: 5, author: "CampusExplorer", message: "The beautiful fall colors on Centennial Common make me appreciate our campus every day.", hashtag: "#NUcampus" },
-]
 
 const colors = ['bg-red-200', 'bg-yellow-200', 'bg-green-200', 'bg-blue-200', 'bg-purple-200']
 
@@ -35,11 +28,30 @@ export default function NUGratitudeApp() {
   const [author, setAuthor] = useState('')
   const [college, setCollege] = useState('')
   const [hashtags, setHashtags] = useState('')
-  const [posts, setPosts] = useState(mockPosts)
+  const [posts, setPosts] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchPosts = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/posts')
+      const data = await response.json()
+      setPosts(data)
+    } catch (error) {
+      console.error('Error fetching posts:', error)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchPosts()
+    const intervalId = setInterval(fetchPosts, 30000)
+    return () => clearInterval(intervalId)
+  }, [fetchPosts])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (message) {
+    if (message && author.trim()) {
+      setIsSubmitting(true)
       const formattedHashtags = hashtags
         .split(',')
         .map(tag => tag.trim())
@@ -48,17 +60,37 @@ export default function NUGratitudeApp() {
         .join(' ')
 
       const newPost = {
-        id: posts.length + 1,
-        author: author.trim() || "Anonymous",
+        author: author.trim(),
         message,
         hashtags: formattedHashtags,
         college: college || undefined,
       }
-      setPosts([newPost, ...posts])
-      setMessage('')
-      setAuthor('')
-      setCollege('')
-      setHashtags('')
+
+      try {
+        const response = await fetch('http://localhost:3001/api/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newPost),
+        })
+
+        if (response.ok) {
+          await fetchPosts()
+          setMessage('')
+          setAuthor('')
+          setCollege('')
+          setHashtags('')
+          setShowSuccessMessage(true)
+          setTimeout(() => setShowSuccessMessage(false), 3000) // Hide message after 3 seconds
+        } else {
+          console.error('Failed to create post')
+        }
+      } catch (error) {
+        console.error('Error creating post:', error)
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -66,20 +98,22 @@ export default function NUGratitudeApp() {
     <div className="min-h-screen bg-gradient-to-b from-red-100 to-black p-8">
       <Card className="max-w-4xl mx-auto bg-white">
         <CardHeader>
-          <CardTitle className="text-4xl font-bold text-center text-red-600">Husky Gratitude Board</CardTitle>
+          <CardTitle className="text-4xl font-bold text-center text-red-600">husky gratitude board 🐶</CardTitle>
           <p className="text-center text-black">Share what you're thankful for at Northeastern University!</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4 mb-8">
             <div>
-              <Label htmlFor="author" className="text-black">Your Name (Optional)</Label>
+              <Label htmlFor="author" className="text-black">Your Name</Label>
               <Input
                 id="author"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Enter your name or leave blank for anonymous"
+                placeholder="share your name and inspire others - break the chain!"
                 className="text-black"
+                required
               />
+              <p className="text-xs text-gray-600 mt-1">Sharing your name helps build a stronger, more connected Husky community!</p>
             </div>
             <div>
               <Label htmlFor="message" className="text-black">Gratitude Message</Label>
@@ -87,7 +121,7 @@ export default function NUGratitudeApp() {
                 id="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="What are you grateful for?"
+                placeholder="what are you grateful for?"
                 required
                 className="text-black"
               />
@@ -98,7 +132,7 @@ export default function NUGratitudeApp() {
                 id="hashtags"
                 value={hashtags}
                 onChange={(e) => setHashtags(e.target.value)}
-                placeholder="Enter hashtags separated by commas (e.g., grateful, husky, northeastern)"
+                placeholder="hashtags are bae -- separated by commas (e.g., grateful, husky, northeastern)"
                 className="text-black"
               />
             </div>
@@ -117,28 +151,55 @@ export default function NUGratitudeApp() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white">Share Gratitude</Button>
+            <Button 
+              type="submit" 
+              className="bg-red-600 hover:bg-red-700 text-white w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Sharing...' : 'Share Gratitude'}
+            </Button>
           </form>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {posts.map((post, index) => (
-              <div 
-                key={post.id} 
-                className={`
-                  ${colors[index % colors.length]} 
-                  p-4 rounded-lg shadow-md 
-                  transform rotate-${Math.floor(Math.random() * 3) - 1} 
-                  transition-all duration-300 ease-in-out
-                  hover:rotate-0 hover:scale-105 hover:shadow-lg
-                  hover:-translate-y-1 cursor-pointer
-                `}
+          <AnimatePresence>
+            {showSuccessMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+                role="alert"
               >
-                <h3 className="font-bold mb-2 text-black">{post.author}</h3>
-                <p className="text-sm mb-2 text-black">{post.message}</p>
-                {post.hashtags && <p className="text-xs text-gray-600">{post.hashtags}</p>}
-                {post.college && <p className="text-xs italic mt-1 text-black">{post.college}</p>}
-              </div>
-            ))}
+                <strong className="font-bold">Thank you! </strong>
+                <span className="block sm:inline">Your gratitude has been shared.</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {posts.map((post: any, index: number) => (
+                <motion.div
+                  key={post._id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.5 }}
+                  className={`
+                    ${colors[index % colors.length]} 
+                    p-4 rounded-lg shadow-md 
+                    transform rotate-${Math.floor(Math.random() * 3) - 1} 
+                    transition-all duration-300 ease-in-out
+                    hover:rotate-0 hover:scale-105 hover:shadow-lg
+                    hover:-translate-y-1 cursor-pointer
+                  `}
+                >
+                  <h3 className="font-bold mb-2 text-black">{post.author}</h3>
+                  <p className="text-sm mb-2 text-black">{post.message}</p>
+                  {post.hashtags && <p className="text-xs text-gray-600">{post.hashtags}</p>}
+                  {post.college && <p className="text-xs italic mt-1 text-black">{post.college}</p>}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </CardContent>
       </Card>
