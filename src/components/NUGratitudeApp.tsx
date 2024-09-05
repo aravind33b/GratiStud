@@ -13,7 +13,7 @@ const colors = ['bg-red-200', 'bg-yellow-200', 'bg-green-200', 'bg-blue-200', 'b
 
 const colleges = [
   "College of Engineering",
-  "D'Amore-McKim School of Business",
+  "D&apos;Amore-McKim School of Business",
   "Khoury College of Computer Sciences",
   "College of Social Sciences and Humanities",
   "Bouvé College of Health Sciences",
@@ -23,12 +23,21 @@ const colleges = [
   "College of Science",
 ]
 
+// Define an interface for the post structure
+interface Post {
+  _id: string;
+  author: string;
+  message: string;
+  hashtags?: string;
+  college?: string;
+}
+
 export default function NUGratitudeApp() {
   const [message, setMessage] = useState('')
   const [author, setAuthor] = useState('')
   const [college, setCollege] = useState('')
   const [hashtags, setHashtags] = useState('')
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState<Post[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [page, setPage] = useState(1)
@@ -38,7 +47,7 @@ export default function NUGratitudeApp() {
   const fetchPosts = useCallback(async (pageNum = 1) => {
     try {
       const response = await fetch(`https://gratitudor-backend.onrender.com/api/posts?page=${pageNum}&limit=10`)
-      const data = await response.json()
+      const data: Post[] = await response.json()
       if (pageNum === 1) {
         setPosts(data)
       } else {
@@ -112,7 +121,7 @@ export default function NUGratitudeApp() {
       <Card className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm flex-grow shadow-lg mb-8">
         <CardHeader>
           <CardTitle className="text-4xl font-bold text-center text-red-600">University Gratitude Board 🎓</CardTitle>
-          <p className="text-center text-black">Share what you're thankful for at your university!</p>
+          <p className="text-center text-black">Share what you&apos;re thankful for at your university!</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4 mb-8">
@@ -165,7 +174,7 @@ export default function NUGratitudeApp() {
             </div>
             <Button 
               type="submit" 
-              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white w-full transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg rounded-full py-2 font-semibold"
+              className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black w-full transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg rounded-full py-2 font-semibold"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Sharing...' : 'Share Gratitude'}
@@ -189,7 +198,7 @@ export default function NUGratitudeApp() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence>
-              {posts.map((post: any, index: number) => (
+              {posts.map((post: Post, index: number) => (
                 <motion.div
                   key={post._id}
                   initial={{ opacity: 0, scale: 0.8 }}

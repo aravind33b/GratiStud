@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Gratigram: University Gratitude Board',
   icons: {
-    icon: '/gratigram-favicon.ico',
+    icon: '/favicon.ico',
   },
 }
 
