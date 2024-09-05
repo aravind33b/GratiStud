@@ -13,7 +13,7 @@ const colors = ['bg-red-200', 'bg-yellow-200', 'bg-green-200', 'bg-blue-200', 'b
 
 const colleges = [
   "College of Engineering",
-  "D&apos;Amore-McKim School of Business",
+  "D'Amore-McKim School of Business",
   "Khoury College of Computer Sciences",
   "College of Social Sciences and Humanities",
   "Bouvé College of Health Sciences",
@@ -23,7 +23,6 @@ const colleges = [
   "College of Science",
 ]
 
-// Define an interface for the post structure
 interface Post {
   _id: string;
   author: string;
@@ -121,7 +120,7 @@ export default function NUGratitudeApp() {
       <Card className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm flex-grow shadow-lg mb-8">
         <CardHeader>
           <CardTitle className="text-4xl font-bold text-center text-red-600">University Gratitude Board 🎓</CardTitle>
-          <p className="text-center text-black">Share what you&apos;re thankful for at your university!</p>
+          <p className="text-center text-black">Share what you are thankful for at your university!</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4 mb-8">
@@ -174,7 +173,7 @@ export default function NUGratitudeApp() {
             </div>
             <Button 
               type="submit" 
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black w-full transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg rounded-full py-2 font-semibold"
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white w-full transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg rounded-full py-2 font-semibold"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Sharing...' : 'Share Gratitude'}
