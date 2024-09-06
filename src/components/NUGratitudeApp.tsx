@@ -52,7 +52,7 @@ export default function NUGratitudeApp() {
       } else {
         setPosts(prevPosts => [...prevPosts, ...data])
       }
-      setHasMore(data.length === 10)
+      setHasMore(data.length === 10) // Only set hasMore to true if we received 10 posts
     } catch (error) {
       console.error('Error fetching posts:', error)
     }
@@ -222,7 +222,7 @@ export default function NUGratitudeApp() {
             </AnimatePresence>
           </div>
           
-          {hasMore && (
+          {hasMore && posts.length > 0 && ( // Ensure posts exist before showing the button
             <div className="mt-8 text-center">
               <Button
                 onClick={handleLoadMore}
